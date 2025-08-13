@@ -88,10 +88,10 @@ export default function ScanPage() {
           <div className="mt-6 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-semibold mb-2">Instructions:</h3>
             <ul className="text-sm text-gray-600 space-y-1">
-              <li>• Point your camera at a QR code</li>
-              <li>• Ensure good lighting for best results</li>
-              <li>• Use the flash toggle if needed</li>
-              <li>• Hold steady until the code is detected</li>
+              <li>Point your camera at a QR code</li>
+              <li>Ensure good lighting for best results</li>
+              <li>Use the flash toggle if needed</li>
+              <li>Hold steady until the code is detected</li>
             </ul>
           </div>
         </div>

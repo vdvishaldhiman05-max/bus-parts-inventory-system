@@ -10,17 +10,15 @@ __turbopack_context__.s({
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$qrcode$2f$lib$2f$browser$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/qrcode/lib/browser.js [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
-"use client";
+'use client';
 ;
-;
-function QRCodeGenerator({ partId, onClose }) {
+function QRCodeGenerator({ partId, partData }) {
     _s();
     const [qrCodeUrl, setQrCodeUrl] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [isGenerating, setIsGenerating] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(false);
-    const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
         "QRCodeGenerator.useEffect": ()=>{
             generateQRCode();
@@ -29,28 +27,25 @@ function QRCodeGenerator({ partId, onClose }) {
         partId
     ]);
     const generateQRCode = async ()=>{
-        if (!partId) return;
         setIsGenerating(true);
-        setError(null);
+        setError('');
         try {
-            // Create QR code data with part ID
-            const qrData = JSON.stringify({
-                type: 'bus_part',
-                id: partId,
-                timestamp: new Date().toISOString()
-            });
-            const url = await __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$qrcode$2f$lib$2f$browser$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"].toDataURL(qrData, {
-                width: 256,
+            // Dynamic import to avoid SSR issues
+            const QRCode = await __turbopack_context__.r("[project]/node_modules/qrcode/lib/browser.js [app-client] (ecmascript, async loader)")(__turbopack_context__.i);
+            // Generate QR code with the part ID
+            const qrDataUrl = await QRCode.toDataURL(partId, {
+                width: 200,
                 margin: 2,
                 color: {
-                    dark: '#000000',
+                    dark: '#E31E24',
                     light: '#FFFFFF'
-                }
+                },
+                errorCorrectionLevel: 'M'
             });
-            setQrCodeUrl(url);
+            setQrCodeUrl(qrDataUrl);
         } catch (err) {
-            setError('Failed to generate QR code');
             console.error('QR Code generation error:', err);
+            setError('Failed to generate QR code. Please try again.');
         } finally{
             setIsGenerating(false);
         }
@@ -58,167 +53,450 @@ function QRCodeGenerator({ partId, onClose }) {
     const downloadQRCode = ()=>{
         if (!qrCodeUrl) return;
         const link = document.createElement('a');
+        link.download = `QR_${partId}.png`;
         link.href = qrCodeUrl;
-        link.download = `qr-code-${partId}.png`;
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
     };
+    const printQRCode = ()=>{
+        if (!qrCodeUrl || !partData) return;
+        const printWindow = window.open('', '_blank');
+        if (!printWindow) return;
+        const printContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR Code - ${partId}</title>
+          <style>
+            body {
+              font-family: Arial, sans-serif;
+              text-align: center;
+              padding: 20px;
+              margin: 0;
+            }
+            .qr-container {
+              border: 2px solid #E31E24;
+              border-radius: 8px;
+              padding: 20px;
+              margin: 20px auto;
+              max-width: 300px;
+              background: white;
+            }
+            .qr-image {
+              width: 200px;
+              height: 200px;
+              margin: 10px auto;
+            }
+            .part-info {
+              margin-top: 15px;
+              font-size: 12px;
+              color: #333;
+            }
+            .part-id {
+              font-size: 16px;
+              font-weight: bold;
+              color: #E31E24;
+              margin-bottom: 10px;
+            }
+            .rta-logo {
+              margin-top: 15px;
+              font-size: 14px;
+              color: #E31E24;
+              font-weight: bold;
+            }
+            @media print {
+              body { margin: 0; }
+              .no-print { display: none; }
+            }
+          </style>
+        </head>
+        <body>
+          <div class="qr-container">
+            <div class="rta-logo">RTA DUBAI</div>
+            <img src="${qrCodeUrl}" alt="QR Code for ${partId}" class="qr-image" />
+            <div class="part-id">${partId}</div>
+            <div class="part-info">
+              <div><strong>Manufacturer:</strong> ${partData.manufacturer}</div>
+              <div><strong>Condition:</strong> ${partData.condition.toUpperCase()}</div>
+              <div><strong>Mfg Date:</strong> ${partData.manufacturing_date}</div>
+              ${partData.description ? `<div><strong>Description:</strong> ${partData.description}</div>` : ''}
+            </div>
+            <div style="margin-top: 15px; font-size: 10px; color: #666;">
+              Bus Parts Inventory System
+            </div>
+          </div>
+          <script>
+            window.onload = function() {
+              window.print();
+              window.onafterprint = function() {
+                window.close();
+              }
+            }
+          </script>
+        </body>
+      </html>
+    `;
+        printWindow.document.write(printContent);
+        printWindow.document.close();
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50",
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "bg-white rounded-lg shadow-xl max-w-sm w-full p-6",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex justify-between items-center mb-4",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                            className: "text-lg font-semibold text-gray-900",
-                            children: [
-                                "QR Code for ",
-                                partId
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 67,
-                            columnNumber: 11
-                        }, this),
-                        onClose && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                            onClick: onClose,
-                            className: "text-gray-400 hover:text-gray-600 text-xl",
-                            children: "×"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 69,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                    lineNumber: 66,
-                    columnNumber: 9
-                }, this),
-                isGenerating && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center justify-center py-8",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 80,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "ml-2 text-gray-600",
-                            children: "Generating QR code..."
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 81,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                    lineNumber: 79,
-                    columnNumber: 11
-                }, this),
-                error && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "bg-red-50 border border-red-200 rounded-md p-3 mb-4",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-red-800 text-sm",
+        className: "qr-code-container",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center mb-4",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                        className: "text-lg font-semibold text-gray-800",
+                        children: [
+                            "QR Code for Part: ",
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                className: "text-red-600 font-mono",
+                                children: partId
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 159,
+                                columnNumber: 29
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 158,
+                        columnNumber: 9
+                    }, this),
+                    partData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-sm text-gray-600 mt-1",
+                        children: [
+                            partData.manufacturer,
+                            " - ",
+                            partData.condition.toUpperCase()
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 162,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                lineNumber: 157,
+                columnNumber: 7
+            }, this),
+            isGenerating ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "flex flex-col items-center py-8",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "loading mb-4"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 170,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-gray-600",
+                        children: "Generating QR code..."
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 171,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                lineNumber: 169,
+                columnNumber: 9
+            }, this) : error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center py-8",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-4xl mb-4",
+                        children: "❌"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 175,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-red-600 mb-4",
                         children: error
                     }, void 0, false, {
                         fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                        lineNumber: 87,
-                        columnNumber: 13
-                    }, this)
-                }, void 0, false, {
-                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                    lineNumber: 86,
-                    columnNumber: 11
-                }, this),
-                qrCodeUrl && !isGenerating && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-center",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "bg-gray-50 p-4 rounded-lg mb-4",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
-                                src: qrCodeUrl,
-                                alt: `QR Code for ${partId}`,
-                                className: "mx-auto",
-                                style: {
-                                    imageRendering: 'pixelated'
-                                }
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                                lineNumber: 94,
-                                columnNumber: 15
-                            }, this)
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 93,
-                            columnNumber: 13
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "space-y-3",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: downloadQRCode,
-                                    className: "w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors",
-                                    children: "Download QR Code"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                                    lineNumber: 103,
-                                    columnNumber: 15
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                    onClick: generateQRCode,
-                                    className: "w-full bg-gray-200 text-gray-800 py-2 px-4 rounded-md hover:bg-gray-300 transition-colors",
-                                    children: "Regenerate"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                                    lineNumber: 110,
-                                    columnNumber: 15
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                            lineNumber: 102,
-                            columnNumber: 13
-                        }, this)
-                    ]
-                }, void 0, true, {
-                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                    lineNumber: 92,
-                    columnNumber: 11
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "mt-4 text-xs text-gray-500 text-center",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        children: "Scan this QR code with the mobile app to view part details"
+                        lineNumber: 176,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: generateQRCode,
+                        className: "btn-secondary",
+                        children: "Try Again"
                     }, void 0, false, {
                         fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                        lineNumber: 121,
+                        lineNumber: 177,
                         columnNumber: 11
                     }, this)
-                }, void 0, false, {
-                    fileName: "[project]/src/components/QRCodeGenerator.tsx",
-                    lineNumber: 120,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/components/QRCodeGenerator.tsx",
-            lineNumber: 65,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                lineNumber: 174,
+                columnNumber: 9
+            }, this) : qrCodeUrl ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "inline-block p-4 bg-white border-4 border-red-500 rounded-lg shadow-lg",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("img", {
+                                src: qrCodeUrl,
+                                alt: `QR Code for ${partId}`,
+                                className: "qr-code-image mx-auto"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 184,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "mt-2 text-xs text-gray-600",
+                                children: "Scan to view part details"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 189,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 183,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mt-6 flex flex-col sm:flex-row gap-3 justify-center",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: downloadQRCode,
+                                className: "btn-primary",
+                                children: "💾 Download PNG"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 195,
+                                columnNumber: 13
+                            }, this),
+                            partData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: printQRCode,
+                                className: "btn-secondary",
+                                children: "🖨️ Print Label"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 202,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: generateQRCode,
+                                className: "btn-secondary",
+                                children: "🔄 Regenerate"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 209,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 194,
+                        columnNumber: 11
+                    }, this),
+                    partData && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mt-6 p-4 bg-gray-50 rounded-lg text-left",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
+                                className: "font-semibold text-gray-800 mb-2",
+                                children: "Part Information:"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 219,
+                                columnNumber: 15
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "ID:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 221,
+                                                columnNumber: 22
+                                            }, this),
+                                            " ",
+                                            partData.id
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 221,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Manufacturer:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 222,
+                                                columnNumber: 22
+                                            }, this),
+                                            " ",
+                                            partData.manufacturer
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 222,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Condition:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 223,
+                                                columnNumber: 22
+                                            }, this),
+                                            " ",
+                                            partData.condition.toUpperCase()
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 223,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Mfg Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 224,
+                                                columnNumber: 22
+                                            }, this),
+                                            " ",
+                                            partData.manufacturing_date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 224,
+                                        columnNumber: 17
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Transaction Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 225,
+                                                columnNumber: 22
+                                            }, this),
+                                            " ",
+                                            partData.transaction_date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 225,
+                                        columnNumber: 17
+                                    }, this),
+                                    partData.buy_date && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Buy Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 226,
+                                                columnNumber: 44
+                                            }, this),
+                                            " ",
+                                            partData.buy_date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 226,
+                                        columnNumber: 39
+                                    }, this),
+                                    partData.repair_date && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Repair Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 227,
+                                                columnNumber: 47
+                                            }, this),
+                                            " ",
+                                            partData.repair_date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 227,
+                                        columnNumber: 42
+                                    }, this),
+                                    partData.install_date && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Install Date:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 228,
+                                                columnNumber: 48
+                                            }, this),
+                                            " ",
+                                            partData.install_date
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 228,
+                                        columnNumber: 43
+                                    }, this),
+                                    partData.description && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "sm:col-span-2",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("strong", {
+                                                children: "Description:"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                                lineNumber: 230,
+                                                columnNumber: 50
+                                            }, this),
+                                            " ",
+                                            partData.description
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                        lineNumber: 230,
+                                        columnNumber: 19
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                                lineNumber: 220,
+                                columnNumber: 15
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                        lineNumber: 218,
+                        columnNumber: 13
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/QRCodeGenerator.tsx",
+                lineNumber: 182,
+                columnNumber: 9
+            }, this) : null
+        ]
+    }, void 0, true, {
         fileName: "[project]/src/components/QRCodeGenerator.tsx",
-        lineNumber: 64,
+        lineNumber: 156,
         columnNumber: 5
     }, this);
 }
-_s(QRCodeGenerator, "30EHTE76n5+Kffddf2+R4c43Pls=");
+_s(QRCodeGenerator, "z5kpInLH/an0jlAWUo7uI44ps9Y=");
 _c = QRCodeGenerator;
 var _c;
 __turbopack_context__.k.register(_c, "QRCodeGenerator");
@@ -239,381 +517,503 @@ var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$QRCodeGenerator$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/QRCodeGenerator.tsx [app-client] (ecmascript)");
 ;
 var _s = __turbopack_context__.k.signature();
-"use client";
+'use client';
 ;
 ;
-function InventoryTable() {
+function InventoryTable({ inventory, onDataChange }) {
     _s();
-    const [inventoryData, setInventoryData] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
-    const [selectedPartId, setSelectedPartId] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
     const [searchTerm, setSearchTerm] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
     const [filterCondition, setFilterCondition] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('all');
-    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
-        "InventoryTable.useEffect": ()=>{
-            loadInventoryData();
-        }
-    }["InventoryTable.useEffect"], []);
-    const loadInventoryData = ()=>{
-        try {
-            const data = localStorage.getItem('inventoryData');
-            if (data) {
-                setInventoryData(JSON.parse(data));
-            }
-        } catch (error) {
-            console.error('Failed to load inventory data:', error);
-        }
-    };
-    const filteredData = inventoryData.filter((item)=>{
-        const matchesSearch = item.id.toLowerCase().includes(searchTerm.toLowerCase()) || item.manufacturer.toLowerCase().includes(searchTerm.toLowerCase()) || (item.description?.toLowerCase().includes(searchTerm.toLowerCase()) ?? false);
+    const [sortField, setSortField] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('id');
+    const [sortDirection, setSortDirection] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('asc');
+    const [selectedParts, setSelectedParts] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(new Set());
+    const [showQRFor, setShowQRFor] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(null);
+    // Filter and sort inventory
+    const filteredInventory = inventory.filter((item)=>{
+        const matchesSearch = Object.values(item).some((value)=>value?.toString().toLowerCase().includes(searchTerm.toLowerCase()));
         const matchesCondition = filterCondition === 'all' || item.condition === filterCondition;
         return matchesSearch && matchesCondition;
+    }).sort((a, b)=>{
+        const aValue = a[sortField] || '';
+        const bValue = b[sortField] || '';
+        const comparison = aValue.toString().localeCompare(bValue.toString());
+        return sortDirection === 'asc' ? comparison : -comparison;
     });
-    const getConditionBadge = (condition)=>{
-        const baseClasses = "px-2 py-1 rounded-full text-xs font-medium";
-        switch(condition.toLowerCase()){
-            case 'brand new':
-                return `${baseClasses} bg-green-100 text-green-800`;
-            case 'used':
-                return `${baseClasses} bg-yellow-100 text-yellow-800`;
-            case 'repaired':
-                return `${baseClasses} bg-blue-100 text-blue-800`;
-            default:
-                return `${baseClasses} bg-gray-100 text-gray-800`;
+    const handleSort = (field)=>{
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
         }
     };
-    if (inventoryData.length === 0) {
-        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "bg-white rounded-lg shadow-md p-8 text-center",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "text-gray-400 mb-4",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                            className: "text-2xl",
-                            children: "📦"
-                        }, void 0, false, {
-                            fileName: "[project]/src/components/InventoryTable.tsx",
-                            lineNumber: 68,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/InventoryTable.tsx",
-                        lineNumber: 67,
-                        columnNumber: 11
-                    }, this)
-                }, void 0, false, {
-                    fileName: "[project]/src/components/InventoryTable.tsx",
-                    lineNumber: 66,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                    className: "text-lg font-medium text-gray-900 mb-2",
-                    children: "No Inventory Data"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/InventoryTable.tsx",
-                    lineNumber: 71,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                    className: "text-gray-600 mb-4",
-                    children: "Upload a CSV file to view your inventory and generate QR codes."
-                }, void 0, false, {
-                    fileName: "[project]/src/components/InventoryTable.tsx",
-                    lineNumber: 72,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
-                    href: "/upload",
-                    className: "inline-block bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors",
-                    children: "Upload CSV File"
-                }, void 0, false, {
-                    fileName: "[project]/src/components/InventoryTable.tsx",
-                    lineNumber: 75,
-                    columnNumber: 9
-                }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/components/InventoryTable.tsx",
-            lineNumber: 65,
-            columnNumber: 7
-        }, this);
-    }
+    const handleSelectAll = ()=>{
+        if (selectedParts.size === filteredInventory.length) {
+            setSelectedParts(new Set());
+        } else {
+            setSelectedParts(new Set(filteredInventory.map((item)=>item.id)));
+        }
+    };
+    const handleSelectPart = (partId)=>{
+        const newSelected = new Set(selectedParts);
+        if (newSelected.has(partId)) {
+            newSelected.delete(partId);
+        } else {
+            newSelected.add(partId);
+        }
+        setSelectedParts(newSelected);
+    };
+    const generateBulkQR = ()=>{
+        if (selectedParts.size === 0) return;
+        // Create a zip file with all selected QR codes
+        // This would require additional libraries in a real implementation
+        alert(`Generating QR codes for ${selectedParts.size} selected parts...`);
+    };
+    const getConditionColor = (condition)=>{
+        switch(condition){
+            case 'brand new':
+                return 'text-green-600 bg-green-50';
+            case 'used':
+                return 'text-yellow-600 bg-yellow-50';
+            case 'repaired':
+                return 'text-orange-600 bg-orange-50';
+            default:
+                return 'text-gray-600 bg-gray-50';
+        }
+    };
+    const getSortIcon = (field)=>{
+        if (sortField !== field) return '↕️';
+        return sortDirection === 'asc' ? '↑' : '↓';
+    };
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "bg-white rounded-lg shadow-md",
+        className: "bg-white rounded-lg shadow-lg overflow-hidden",
         children: [
             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                 className: "p-6 border-b border-gray-200",
                 children: [
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
-                        className: "text-xl font-semibold text-gray-900 mb-4",
-                        children: "Inventory Items"
-                    }, void 0, false, {
-                        fileName: "[project]/src/components/InventoryTable.tsx",
-                        lineNumber: 88,
-                        columnNumber: 9
-                    }, this),
                     /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex flex-col sm:flex-row gap-4 mb-4",
+                        className: "flex flex-col lg:flex-row gap-4",
                         children: [
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
                                 className: "flex-1",
                                 children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
                                     type: "text",
-                                    placeholder: "Search by ID, manufacturer, or description...",
+                                    placeholder: "Search parts by ID, manufacturer, description...",
                                     value: searchTerm,
                                     onChange: (e)=>setSearchTerm(e.target.value),
-                                    className: "w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                    className: "form-input"
                                 }, void 0, false, {
                                     fileName: "[project]/src/components/InventoryTable.tsx",
-                                    lineNumber: 92,
+                                    lineNumber: 102,
                                     columnNumber: 13
                                 }, this)
                             }, void 0, false, {
                                 fileName: "[project]/src/components/InventoryTable.tsx",
-                                lineNumber: 91,
+                                lineNumber: 101,
                                 columnNumber: 11
                             }, this),
                             /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
-                                    value: filterCondition,
-                                    onChange: (e)=>setFilterCondition(e.target.value),
-                                    className: "px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                            value: "all",
-                                            children: "All Conditions"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 106,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                            value: "brand new",
-                                            children: "Brand New"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 107,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                            value: "used",
-                                            children: "Used"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 108,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
-                                            value: "repaired",
-                                            children: "Repaired"
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 109,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/components/InventoryTable.tsx",
-                                    lineNumber: 101,
-                                    columnNumber: 13
-                                }, this)
-                            }, void 0, false, {
-                                fileName: "[project]/src/components/InventoryTable.tsx",
-                                lineNumber: 100,
-                                columnNumber: 11
-                            }, this)
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/InventoryTable.tsx",
-                        lineNumber: 90,
-                        columnNumber: 9
-                    }, this),
-                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                        className: "text-sm text-gray-600",
-                        children: [
-                            "Showing ",
-                            filteredData.length,
-                            " of ",
-                            inventoryData.length,
-                            " items"
-                        ]
-                    }, void 0, true, {
-                        fileName: "[project]/src/components/InventoryTable.tsx",
-                        lineNumber: 114,
-                        columnNumber: 9
-                    }, this)
-                ]
-            }, void 0, true, {
-                fileName: "[project]/src/components/InventoryTable.tsx",
-                lineNumber: 87,
-                columnNumber: 7
-            }, this),
-            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                className: "overflow-x-auto",
-                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
-                    className: "w-full",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
-                            className: "bg-gray-50",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                className: "flex gap-3",
                                 children: [
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                        className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                                        children: "Part ID"
-                                    }, void 0, false, {
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("select", {
+                                        value: filterCondition,
+                                        onChange: (e)=>setFilterCondition(e.target.value),
+                                        className: "form-input min-w-[150px]",
+                                        children: [
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                value: "all",
+                                                children: "All Conditions"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                                lineNumber: 116,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                value: "brand new",
+                                                children: "Brand New"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                                lineNumber: 117,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                value: "used",
+                                                children: "Used"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                                lineNumber: 118,
+                                                columnNumber: 15
+                                            }, this),
+                                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("option", {
+                                                value: "repaired",
+                                                children: "Repaired"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                                lineNumber: 119,
+                                                columnNumber: 15
+                                            }, this)
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/src/components/InventoryTable.tsx",
-                                        lineNumber: 123,
-                                        columnNumber: 15
+                                        lineNumber: 111,
+                                        columnNumber: 13
                                     }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                        className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                                        children: "Manufacturer"
-                                    }, void 0, false, {
+                                    selectedParts.size > 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                        onClick: generateBulkQR,
+                                        className: "btn-primary whitespace-nowrap",
+                                        children: [
+                                            "📱 Generate ",
+                                            selectedParts.size,
+                                            " QR Codes"
+                                        ]
+                                    }, void 0, true, {
                                         fileName: "[project]/src/components/InventoryTable.tsx",
-                                        lineNumber: 126,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                        className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                                        children: "Condition"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/InventoryTable.tsx",
-                                        lineNumber: 129,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                        className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                                        children: "Description"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/InventoryTable.tsx",
-                                        lineNumber: 132,
-                                        columnNumber: 15
-                                    }, this),
-                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
-                                        className: "px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider",
-                                        children: "Actions"
-                                    }, void 0, false, {
-                                        fileName: "[project]/src/components/InventoryTable.tsx",
-                                        lineNumber: 135,
+                                        lineNumber: 122,
                                         columnNumber: 15
                                     }, this)
                                 ]
                             }, void 0, true, {
                                 fileName: "[project]/src/components/InventoryTable.tsx",
-                                lineNumber: 122,
+                                lineNumber: 110,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 100,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "mt-4 flex items-center justify-between text-sm text-gray-600",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
+                                children: [
+                                    "Showing ",
+                                    filteredInventory.length,
+                                    " of ",
+                                    inventory.length,
+                                    " parts",
+                                    selectedParts.size > 0 && ` (${selectedParts.size} selected)`
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                lineNumber: 133,
+                                columnNumber: 11
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>setShowQRFor(null),
+                                className: "text-red-600 hover:text-red-800",
+                                children: "Hide QR Codes"
+                            }, void 0, false, {
+                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                lineNumber: 137,
+                                columnNumber: 11
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 132,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/InventoryTable.tsx",
+                lineNumber: 99,
+                columnNumber: 7
+            }, this),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "overflow-x-auto",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("table", {
+                    className: "inventory-table",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("thead", {
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "w-12",
+                                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                            type: "checkbox",
+                                            checked: selectedParts.size === filteredInventory.length && filteredInventory.length > 0,
+                                            onChange: handleSelectAll,
+                                            className: "rounded border-gray-300"
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/InventoryTable.tsx",
+                                            lineNumber: 152,
+                                            columnNumber: 17
+                                        }, this)
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 151,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "cursor-pointer hover:bg-red-600",
+                                        onClick: ()=>handleSort('id'),
+                                        children: [
+                                            "Part ID ",
+                                            getSortIcon('id')
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 159,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "cursor-pointer hover:bg-red-600",
+                                        onClick: ()=>handleSort('manufacturer'),
+                                        children: [
+                                            "Manufacturer ",
+                                            getSortIcon('manufacturer')
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 165,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "cursor-pointer hover:bg-red-600",
+                                        onClick: ()=>handleSort('condition'),
+                                        children: [
+                                            "Condition ",
+                                            getSortIcon('condition')
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 171,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "cursor-pointer hover:bg-red-600",
+                                        onClick: ()=>handleSort('manufacturing_date'),
+                                        children: [
+                                            "Mfg Date ",
+                                            getSortIcon('manufacturing_date')
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 177,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "cursor-pointer hover:bg-red-600",
+                                        onClick: ()=>handleSort('transaction_date'),
+                                        children: [
+                                            "Transaction Date ",
+                                            getSortIcon('transaction_date')
+                                        ]
+                                    }, void 0, true, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 183,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        className: "hidden md:table-cell",
+                                        children: "Description"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 189,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("th", {
+                                        children: "Actions"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/components/InventoryTable.tsx",
+                                        lineNumber: 190,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                lineNumber: 150,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/components/InventoryTable.tsx",
-                            lineNumber: 121,
+                            lineNumber: 149,
                             columnNumber: 11
                         }, this),
                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tbody", {
-                            className: "bg-white divide-y divide-gray-200",
-                            children: filteredData.map((item)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
-                                    className: "hover:bg-gray-50",
+                            children: filteredInventory.map((part)=>/*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("tr", {
                                     children: [
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                            className: "px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900",
-                                            children: item.id
+                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("input", {
+                                                type: "checkbox",
+                                                checked: selectedParts.has(part.id),
+                                                onChange: ()=>handleSelectPart(part.id),
+                                                className: "rounded border-gray-300"
+                                            }, void 0, false, {
+                                                fileName: "[project]/src/components/InventoryTable.tsx",
+                                                lineNumber: 197,
+                                                columnNumber: 19
+                                            }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 143,
+                                            lineNumber: 196,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                            className: "px-6 py-4 whitespace-nowrap text-sm text-gray-900",
-                                            children: item.manufacturer
+                                            className: "font-mono font-semibold text-red-600",
+                                            children: part.id
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 146,
+                                            lineNumber: 204,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                            className: "px-6 py-4 whitespace-nowrap",
+                                            children: part.manufacturer
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/InventoryTable.tsx",
+                                            lineNumber: 207,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: getConditionBadge(item.condition),
-                                                children: item.condition
+                                                className: `px-2 py-1 rounded-full text-xs font-semibold ${getConditionColor(part.condition)}`,
+                                                children: part.condition.toUpperCase()
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/InventoryTable.tsx",
-                                                lineNumber: 150,
+                                                lineNumber: 209,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 149,
+                                            lineNumber: 208,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                            className: "px-6 py-4 text-sm text-gray-900",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                                className: "max-w-xs truncate",
-                                                children: item.description || 'No description'
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/components/InventoryTable.tsx",
-                                                lineNumber: 155,
-                                                columnNumber: 19
-                                            }, this)
+                                            children: part.manufacturing_date
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 154,
+                                            lineNumber: 213,
                                             columnNumber: 17
                                         }, this),
                                         /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
-                                            className: "px-6 py-4 whitespace-nowrap text-sm",
+                                            children: part.transaction_date
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/InventoryTable.tsx",
+                                            lineNumber: 214,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
+                                            className: "hidden md:table-cell",
+                                            children: part.description || '-'
+                                        }, void 0, false, {
+                                            fileName: "[project]/src/components/InventoryTable.tsx",
+                                            lineNumber: 215,
+                                            columnNumber: 17
+                                        }, this),
+                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("td", {
                                             children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
-                                                onClick: ()=>setSelectedPartId(item.id),
-                                                className: "bg-blue-600 text-white px-3 py-1 rounded-md hover:bg-blue-700 transition-colors text-xs",
-                                                children: "Generate QR"
+                                                onClick: ()=>setShowQRFor(showQRFor === part.id ? null : part.id),
+                                                className: `btn-secondary text-xs ${showQRFor === part.id ? 'bg-red-100 border-red-500 text-red-700' : ''}`,
+                                                children: showQRFor === part.id ? '📱 Hide QR' : '📱 Generate QR'
                                             }, void 0, false, {
                                                 fileName: "[project]/src/components/InventoryTable.tsx",
-                                                lineNumber: 160,
+                                                lineNumber: 219,
                                                 columnNumber: 19
                                             }, this)
                                         }, void 0, false, {
                                             fileName: "[project]/src/components/InventoryTable.tsx",
-                                            lineNumber: 159,
+                                            lineNumber: 218,
                                             columnNumber: 17
                                         }, this)
                                     ]
-                                }, item.id, true, {
+                                }, part.id, true, {
                                     fileName: "[project]/src/components/InventoryTable.tsx",
-                                    lineNumber: 142,
+                                    lineNumber: 195,
                                     columnNumber: 15
                                 }, this))
                         }, void 0, false, {
                             fileName: "[project]/src/components/InventoryTable.tsx",
-                            lineNumber: 140,
+                            lineNumber: 193,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/components/InventoryTable.tsx",
-                    lineNumber: 120,
+                    lineNumber: 148,
                     columnNumber: 9
                 }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/InventoryTable.tsx",
-                lineNumber: 119,
+                lineNumber: 147,
                 columnNumber: 7
             }, this),
-            selectedPartId && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$QRCodeGenerator$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                partId: selectedPartId,
-                onClose: ()=>setSelectedPartId(null)
+            showQRFor && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "p-6 border-t border-gray-200 bg-gray-50",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "max-w-md mx-auto",
+                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$QRCodeGenerator$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                        partId: showQRFor,
+                        partData: inventory.find((p)=>p.id === showQRFor)
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 236,
+                        columnNumber: 13
+                    }, this)
+                }, void 0, false, {
+                    fileName: "[project]/src/components/InventoryTable.tsx",
+                    lineNumber: 235,
+                    columnNumber: 11
+                }, this)
             }, void 0, false, {
                 fileName: "[project]/src/components/InventoryTable.tsx",
-                lineNumber: 174,
+                lineNumber: 234,
+                columnNumber: 9
+            }, this),
+            filteredInventory.length === 0 && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "p-12 text-center",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "text-6xl mb-4",
+                        children: "🔍"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 247,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                        className: "text-lg font-semibold text-gray-700 mb-2",
+                        children: "No parts found"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 248,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-gray-500 mb-4",
+                        children: searchTerm || filterCondition !== 'all' ? 'Try adjusting your search or filter criteria' : 'No inventory data available'
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 251,
+                        columnNumber: 11
+                    }, this),
+                    (searchTerm || filterCondition !== 'all') && /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                        onClick: ()=>{
+                            setSearchTerm('');
+                            setFilterCondition('all');
+                        },
+                        className: "btn-secondary",
+                        children: "Clear Filters"
+                    }, void 0, false, {
+                        fileName: "[project]/src/components/InventoryTable.tsx",
+                        lineNumber: 258,
+                        columnNumber: 13
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/components/InventoryTable.tsx",
+                lineNumber: 246,
                 columnNumber: 9
             }, this)
         ]
     }, void 0, true, {
         fileName: "[project]/src/components/InventoryTable.tsx",
-        lineNumber: 86,
+        lineNumber: 97,
         columnNumber: 5
     }, this);
 }
-_s(InventoryTable, "kVXuOJi12XGLTVHchNLAEGOF+wQ=");
+_s(InventoryTable, "pxN5rqvMhGrupwhH/8HuT6Z/JIA=");
 _c = InventoryTable;
 var _c;
 __turbopack_context__.k.register(_c, "InventoryTable");
@@ -630,236 +1030,424 @@ __turbopack_context__.s({
     "default": (()=>GeneratePage)
 });
 var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/jsx-dev-runtime.js [app-client] (ecmascript)");
-var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/client/app-dir/link.js [app-client] (ecmascript)");
+var __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/node_modules/next/dist/compiled/react/index.js [app-client] (ecmascript)");
 var __TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$InventoryTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__ = __turbopack_context__.i("[project]/src/components/InventoryTable.tsx [app-client] (ecmascript)");
-"use client";
 ;
+var _s = __turbopack_context__.k.signature();
+'use client';
 ;
 ;
 function GeneratePage() {
+    _s();
+    const [inventory, setInventory] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])([]);
+    const [loading, setLoading] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])(true);
+    const [error, setError] = (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useState"])('');
+    (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$index$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["useEffect"])({
+        "GeneratePage.useEffect": ()=>{
+            loadInventoryData();
+        }
+    }["GeneratePage.useEffect"], []);
+    const loadInventoryData = ()=>{
+        try {
+            const data = localStorage.getItem('inventoryData');
+            if (data) {
+                const parsedData = JSON.parse(data);
+                if (Array.isArray(parsedData)) {
+                    setInventory(parsedData);
+                } else {
+                    setError('Invalid inventory data format');
+                }
+            } else {
+                setError('No inventory data found');
+            }
+        } catch (err) {
+            setError('Failed to load inventory data');
+            console.error('Error loading inventory:', err);
+        } finally{
+            setLoading(false);
+        }
+    };
+    const refreshData = ()=>{
+        setLoading(true);
+        setError('');
+        loadInventoryData();
+    };
+    if (loading) {
+        return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+            className: "flex items-center justify-center min-h-[60vh]",
+            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "loading mb-4"
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 58,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-gray-600",
+                        children: "Loading inventory data..."
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 59,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/app/generate/page.tsx",
+                lineNumber: 57,
+                columnNumber: 9
+            }, this)
+        }, void 0, false, {
+            fileName: "[project]/src/app/generate/page.tsx",
+            lineNumber: 56,
+            columnNumber: 7
+        }, this);
+    }
     return /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-        className: "min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 p-4",
-        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-            className: "max-w-6xl mx-auto pt-8",
-            children: [
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "flex items-center mb-6",
+        className: "max-w-7xl mx-auto",
+        children: [
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center mb-8",
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
+                        className: "text-3xl font-bold text-gray-800 mb-2",
+                        children: "Generate QR Codes"
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 68,
+                        columnNumber: 9
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                        className: "text-gray-600",
+                        children: "Create QR codes for your bus parts inventory"
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 71,
+                        columnNumber: 9
+                    }, this)
+                ]
+            }, void 0, true, {
+                fileName: "[project]/src/app/generate/page.tsx",
+                lineNumber: 67,
+                columnNumber: 7
+            }, this),
+            error ? /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "text-center",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "bg-red-50 border border-red-200 rounded-lg p-8 max-w-md mx-auto",
                     children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                            href: "/",
-                            className: "text-green-600 hover:text-green-800 mr-4",
-                            children: "← Back to Home"
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "text-6xl mb-4",
+                            children: "📋"
                         }, void 0, false, {
                             fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 11,
-                            columnNumber: 11
+                            lineNumber: 79,
+                            columnNumber: 13
                         }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h1", {
-                            className: "text-2xl font-bold text-gray-900",
-                            children: "Generate QR Codes"
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h2", {
+                            className: "text-xl font-semibold text-red-800 mb-2",
+                            children: "No Inventory Data"
                         }, void 0, false, {
                             fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 14,
-                            columnNumber: 11
+                            lineNumber: 80,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                            className: "text-red-700 mb-6",
+                            children: [
+                                error,
+                                ". Please upload a CSV file first to generate QR codes."
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/generate/page.tsx",
+                            lineNumber: 83,
+                            columnNumber: 13
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "space-y-3",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                    href: "/upload",
+                                    className: "btn-primary block",
+                                    children: "📁 Upload CSV File"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 87,
+                                    columnNumber: 15
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                    onClick: refreshData,
+                                    className: "btn-secondary block w-full",
+                                    children: "🔄 Refresh Data"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 90,
+                                    columnNumber: 15
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/generate/page.tsx",
+                            lineNumber: 86,
+                            columnNumber: 13
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/generate/page.tsx",
-                    lineNumber: 10,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "mb-6 bg-white rounded-lg shadow-md p-4",
-                    children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                        className: "flex items-center text-sm text-gray-600",
-                        children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "flex items-center mr-6",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "w-3 h-3 bg-green-500 rounded-full mr-2"
-                                }, void 0, false, {
-                                    fileName: "[project]/src/app/generate/page.tsx",
-                                    lineNumber: 20,
-                                    columnNumber: 15
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                    children: 'Click "Generate QR" for any part to create a downloadable QR code'
-                                }, void 0, false, {
-                                    fileName: "[project]/src/app/generate/page.tsx",
-                                    lineNumber: 21,
-                                    columnNumber: 15
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 19,
-                            columnNumber: 13
-                        }, this)
-                    }, void 0, false, {
+                    lineNumber: 78,
+                    columnNumber: 11
+                }, this)
+            }, void 0, false, {
+                fileName: "[project]/src/app/generate/page.tsx",
+                lineNumber: 77,
+                columnNumber: 9
+            }, this) : /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["Fragment"], {
+                children: [
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "grid grid-cols-1 md:grid-cols-4 gap-4 mb-8",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "bg-white rounded-lg shadow p-6 text-center",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-2xl font-bold text-red-600",
+                                        children: inventory.length
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 104,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-gray-600",
+                                        children: "Total Parts"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 105,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 103,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "bg-white rounded-lg shadow p-6 text-center",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-2xl font-bold text-green-600",
+                                        children: inventory.filter((item)=>item.condition === 'brand new').length
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 108,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-gray-600",
+                                        children: "Brand New"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 111,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 107,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "bg-white rounded-lg shadow p-6 text-center",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-2xl font-bold text-yellow-600",
+                                        children: inventory.filter((item)=>item.condition === 'used').length
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 114,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-gray-600",
+                                        children: "Used"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 117,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 113,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                className: "bg-white rounded-lg shadow p-6 text-center",
+                                children: [
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-2xl font-bold text-orange-600",
+                                        children: inventory.filter((item)=>item.condition === 'repaired').length
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 120,
+                                        columnNumber: 15
+                                    }, this),
+                                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                                        className: "text-sm text-gray-600",
+                                        children: "Repaired"
+                                    }, void 0, false, {
+                                        fileName: "[project]/src/app/generate/page.tsx",
+                                        lineNumber: 123,
+                                        columnNumber: 15
+                                    }, this)
+                                ]
+                            }, void 0, true, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 119,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
                         fileName: "[project]/src/app/generate/page.tsx",
-                        lineNumber: 18,
+                        lineNumber: 102,
                         columnNumber: 11
-                    }, this)
-                }, void 0, false, {
-                    fileName: "[project]/src/app/generate/page.tsx",
-                    lineNumber: 17,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$InventoryTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {}, void 0, false, {
-                    fileName: "[project]/src/app/generate/page.tsx",
-                    lineNumber: 26,
-                    columnNumber: 9
-                }, this),
-                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                    className: "mt-6 bg-white rounded-lg shadow-md p-6",
-                    children: [
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
-                            className: "text-lg font-semibold text-gray-900 mb-3",
-                            children: "Next Steps"
-                        }, void 0, false, {
-                            fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 29,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "grid grid-cols-1 md:grid-cols-2 gap-4",
-                            children: [
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-start",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex-shrink-0 w-6 h-6 bg-blue-100 rounded-full flex items-center justify-center mr-3 mt-0.5",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-blue-600 text-xs font-bold",
-                                                children: "1"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/generate/page.tsx",
-                                                lineNumber: 33,
-                                                columnNumber: 17
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/generate/page.tsx",
-                                            lineNumber: 32,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
-                                                    className: "font-medium text-gray-900",
-                                                    children: "Print QR Codes"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/app/generate/page.tsx",
-                                                    lineNumber: 36,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-sm text-gray-600",
-                                                    children: "Download and print the QR codes to attach to your bus parts"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/app/generate/page.tsx",
-                                                    lineNumber: 37,
-                                                    columnNumber: 17
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/src/app/generate/page.tsx",
-                                            lineNumber: 35,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/app/generate/page.tsx",
-                                    lineNumber: 31,
-                                    columnNumber: 13
-                                }, this),
-                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                    className: "flex items-start",
-                                    children: [
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            className: "flex-shrink-0 w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center mr-3 mt-0.5",
-                                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("span", {
-                                                className: "text-purple-600 text-xs font-bold",
-                                                children: "2"
-                                            }, void 0, false, {
-                                                fileName: "[project]/src/app/generate/page.tsx",
-                                                lineNumber: 42,
-                                                columnNumber: 17
-                                            }, this)
-                                        }, void 0, false, {
-                                            fileName: "[project]/src/app/generate/page.tsx",
-                                            lineNumber: 41,
-                                            columnNumber: 15
-                                        }, this),
-                                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                                            children: [
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h4", {
-                                                    className: "font-medium text-gray-900",
-                                                    children: "Scan to View"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/app/generate/page.tsx",
-                                                    lineNumber: 45,
-                                                    columnNumber: 17
-                                                }, this),
-                                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
-                                                    className: "text-sm text-gray-600",
-                                                    children: "Use the scan feature to quickly access part information"
-                                                }, void 0, false, {
-                                                    fileName: "[project]/src/app/generate/page.tsx",
-                                                    lineNumber: 46,
-                                                    columnNumber: 17
-                                                }, this)
-                                            ]
-                                        }, void 0, true, {
-                                            fileName: "[project]/src/app/generate/page.tsx",
-                                            lineNumber: 44,
-                                            columnNumber: 15
-                                        }, this)
-                                    ]
-                                }, void 0, true, {
-                                    fileName: "[project]/src/app/generate/page.tsx",
-                                    lineNumber: 40,
-                                    columnNumber: 13
-                                }, this)
-                            ]
-                        }, void 0, true, {
-                            fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 30,
-                            columnNumber: 11
-                        }, this),
-                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
-                            className: "mt-4",
-                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$client$2f$app$2d$dir$2f$link$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
-                                href: "/scan",
-                                className: "inline-block bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 transition-colors text-sm",
-                                children: "Go to Scanner"
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                        className: "flex flex-col sm:flex-row gap-4 mb-6",
+                        children: [
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: refreshData,
+                                className: "btn-secondary",
+                                children: "🔄 Refresh Data"
                             }, void 0, false, {
                                 fileName: "[project]/src/app/generate/page.tsx",
-                                lineNumber: 52,
+                                lineNumber: 129,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                href: "/upload",
+                                className: "btn-secondary",
+                                children: "📁 Upload New CSV"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 135,
+                                columnNumber: 13
+                            }, this),
+                            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("button", {
+                                onClick: ()=>{
+                                    // Generate all QR codes at once
+                                    const event = new CustomEvent('generateAllQR');
+                                    window.dispatchEvent(event);
+                                },
+                                className: "btn-primary",
+                                children: "📱 Generate All QR Codes"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 138,
+                                columnNumber: 13
+                            }, this)
+                        ]
+                    }, void 0, true, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 128,
+                        columnNumber: 11
+                    }, this),
+                    /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])(__TURBOPACK__imported__module__$5b$project$5d2f$src$2f$components$2f$InventoryTable$2e$tsx__$5b$app$2d$client$5d$__$28$ecmascript$29$__["default"], {
+                        inventory: inventory,
+                        onDataChange: refreshData
+                    }, void 0, false, {
+                        fileName: "[project]/src/app/generate/page.tsx",
+                        lineNumber: 151,
+                        columnNumber: 11
+                    }, this)
+                ]
+            }, void 0, true),
+            /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                className: "mt-12 text-center",
+                children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                    className: "bg-red-50 border border-red-200 rounded-lg p-6",
+                    children: [
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("h3", {
+                            className: "text-lg font-semibold text-red-800 mb-2",
+                            children: "How to use QR codes"
+                        }, void 0, false, {
+                            fileName: "[project]/src/app/generate/page.tsx",
+                            lineNumber: 161,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "text-red-700 mb-4 space-y-2",
+                            children: [
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: "1. Generate QR codes for your parts using the buttons in the table"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 165,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: "2. Download and print the QR code images"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 166,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: "3. Attach the printed QR codes to the physical parts"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 167,
+                                    columnNumber: 13
+                                }, this),
+                                /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("p", {
+                                    children: "4. Use the scanner to quickly access part information"
+                                }, void 0, false, {
+                                    fileName: "[project]/src/app/generate/page.tsx",
+                                    lineNumber: 168,
+                                    columnNumber: 13
+                                }, this)
+                            ]
+                        }, void 0, true, {
+                            fileName: "[project]/src/app/generate/page.tsx",
+                            lineNumber: 164,
+                            columnNumber: 11
+                        }, this),
+                        /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("div", {
+                            className: "flex flex-col sm:flex-row gap-3 justify-center",
+                            children: /*#__PURE__*/ (0, __TURBOPACK__imported__module__$5b$project$5d2f$node_modules$2f$next$2f$dist$2f$compiled$2f$react$2f$jsx$2d$dev$2d$runtime$2e$js__$5b$app$2d$client$5d$__$28$ecmascript$29$__["jsxDEV"])("a", {
+                                href: "/",
+                                className: "btn-secondary",
+                                children: "📷 Go to Scanner"
+                            }, void 0, false, {
+                                fileName: "[project]/src/app/generate/page.tsx",
+                                lineNumber: 171,
                                 columnNumber: 13
                             }, this)
                         }, void 0, false, {
                             fileName: "[project]/src/app/generate/page.tsx",
-                            lineNumber: 51,
+                            lineNumber: 170,
                             columnNumber: 11
                         }, this)
                     ]
                 }, void 0, true, {
                     fileName: "[project]/src/app/generate/page.tsx",
-                    lineNumber: 28,
+                    lineNumber: 160,
                     columnNumber: 9
                 }, this)
-            ]
-        }, void 0, true, {
-            fileName: "[project]/src/app/generate/page.tsx",
-            lineNumber: 9,
-            columnNumber: 7
-        }, this)
-    }, void 0, false, {
+            }, void 0, false, {
+                fileName: "[project]/src/app/generate/page.tsx",
+                lineNumber: 159,
+                columnNumber: 7
+            }, this)
+        ]
+    }, void 0, true, {
         fileName: "[project]/src/app/generate/page.tsx",
-        lineNumber: 8,
+        lineNumber: 66,
         columnNumber: 5
     }, this);
 }
+_s(GeneratePage, "91xwN0RO34+S2Ww81kp2N5LA7P4=");
 _c = GeneratePage;
 var _c;
 __turbopack_context__.k.register(_c, "GeneratePage");
