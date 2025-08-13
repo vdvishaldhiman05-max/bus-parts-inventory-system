@@ -1,0 +1,11 @@
+id,manufacturer,manufacturing_date,condition,transaction_date,buy_date,repair_date,install_date,description
+BP001,Acme Corp,2020-01-01,brand new,2020-02-15,2020-02-15,,2020-02-20,Engine Oil Filter
+BP002,Acme Corp,2019-12-15,used,2021-03-20,2019-12-20,,2021-03-25,Brake Pads Set
+BP003,BestParts,2021-05-10,repaired,2022-01-10,2021-05-15,2022-01-05,2022-01-15,Transmission Belt
+BP004,Dubai Motors,2022-03-01,brand new,2022-03-15,2022-03-15,,2022-03-20,Air Filter Assembly
+BP005,RTA Supplies,2021-08-20,used,2022-06-10,2021-08-25,,2022-06-15,Hydraulic Pump
+BP006,Metro Parts,2020-11-30,repaired,2023-01-05,2020-12-05,2022-12-20,2023-01-10,Brake Disc Set
+BP007,Emirates Auto,2023-01-15,brand new,2023-02-01,2023-02-01,,2023-02-05,Fuel Injector
+BP008,Gulf Parts,2019-06-10,used,2021-09-15,2019-06-15,,2021-09-20,Alternator Unit
+BP009,Dubai Transit,2022-07-25,brand new,2022-08-10,2022-08-10,,2022-08-15,Cooling Fan Motor
+BP010,RTA Workshop,2021-04-12,repaired,2022-11-20,2021-04-20,2022-11-10,2022-11-25,Suspension Spring

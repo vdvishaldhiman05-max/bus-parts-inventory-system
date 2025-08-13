@@ -7,10 +7,10 @@
   "author": "Bus Parts Developer <developer@busparts.app>",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/bus-parts-inventory.git"
+    "url": "https://github.com/vdvishaldhiman05-max/bus-parts-inventory-system.git"
   },
   "scripts": {
-    "dev": "PORT=8000 next dev --turbopack",
+    "dev": "next dev --turbopack -p 8000",
     "build": "next build",
     "start": "next start",
     "lint": "next lint"
